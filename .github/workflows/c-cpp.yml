@@ -1,0 +1,208 @@
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+// Maximum number of students
+const int MAX_STUDENTS = 100;
+// Number of questions
+const int NUM_QUESTIONS = 10;
+// Number of students to simulate
+const int SIMULATED_STUDENTS = 4;
+
+class Question {
+private:
+    string text;
+    string choices[4];
+    char correctAnswer;
+
+public:
+    Question() : text(""), correctAnswer(' ') {}
+
+    void setQuestion(const string &text, const string choices[4], char correctAnswer) {
+        this->text = text;
+        for (int i = 0; i < 4; ++i) {
+            this->choices[i] = choices[i];
+        }
+        this->correctAnswer = correctAnswer;
+    }
+
+    string getText() const {
+        return text;
+    }
+
+    char getCorrectAnswer() const {
+        return correctAnswer;
+    }
+
+    void showChoices() const {
+        for (int i = 0; i < 4; ++i) {
+            cout << char('A' + i) << ": " << choices[i] << " ";
+        }
+        cout << endl;
+    }
+};
+
+class Student {
+private:
+    string name;
+    string id;
+    char answers[NUM_QUESTIONS];
+    int score;
+
+public:
+    Student() : name(""), id(""), score(0) {
+        for(int i = 0; i < NUM_QUESTIONS; i++) {
+            answers[i] = ' ';
+        }
+    }
+
+    void setDetails(const string &name, const string &id) {
+        this->name = name;
+        this->id = id;
+    }
+
+    void setAnswers(const Question questions[NUM_QUESTIONS]) {
+        cout << "Enter your answers for the following questions (A/B/C/D):\n";
+        for(int i = 0; i < NUM_QUESTIONS; i++) {
+            cout << "Question " << i + 1 << ": " << questions[i].getText() << endl;
+            questions[i].showChoices();
+            cout << "Your answer: ";
+            cin >> answers[i];
+        }
+    }
+
+    void simulateAnswers(const Question questions[NUM_QUESTIONS]) {
+        for(int i = 0; i < NUM_QUESTIONS; i++) {
+            answers[i] = 'A' + (rand() % 4);
+        }
+    }
+
+    void calculateScore(const Question questions[NUM_QUESTIONS]) {
+        score = 0;
+        for(int i = 0; i < NUM_QUESTIONS; i++) {
+            if(answers[i] == questions[i].getCorrectAnswer()) {
+                score++;
+            }
+        }
+    }
+
+    void printDetails() const {
+        cout << "Name: " << name << ", ID: " << id << ", Score: " << score << endl;
+    }
+
+    void checkAnswers(const Question questions[NUM_QUESTIONS]) const {
+        cout << "Checking answers for " << name << " (ID: " << id << "):\n";
+        cout << "Answer: ";
+        for(int i = 0; i < NUM_QUESTIONS; i++) {
+            cout << (i + 1) << questions[i].getCorrectAnswer() << " ";
+        }
+        cout << endl;
+        cout << "Correct answers: ";
+        for(int i = 0; i < NUM_QUESTIONS; i++) {
+            if(answers[i] == questions[i].getCorrectAnswer()) {
+                cout << (i + 1) << " ";
+            }
+        }
+        cout << "\nIncorrect answers: ";
+        for(int i = 0; i < NUM_QUESTIONS; i++) {
+            if(answers[i] != questions[i].getCorrectAnswer()) {
+                cout << (i + 1) << " ";
+            }
+        }
+        cout << endl;
+    }
+};
+
+class Exam {
+private:
+    Student students[MAX_STUDENTS];
+    int studentCount;
+    Question questions[NUM_QUESTIONS];
+
+public:
+    Exam() : studentCount(0) {}
+
+    void generateQuestions() {
+        string questionTexts[NUM_QUESTIONS] = {
+            "What is 2+2?", "What is the capital of France?", "What color is the sky?",
+            "What is the boiling point of water?", "Who wrote 'To Kill a Mockingbird'?",
+            "What is the largest planet in our solar system?", "What is the speed of light?",
+            "Who painted the Mona Lisa?", "What is the chemical symbol for gold?",
+            "What is the square root of 64?"
+        };
+        string choices[NUM_QUESTIONS][4] = {
+            {"3", "4", "5", "6"},
+            {"Paris", "London", "Berlin", "Rome"},
+            {"Blue", "Green", "Red", "Yellow"},
+            {"100C", "90C", "80C", "70C"},
+            {"Harper Lee", "Mark Twain", "Ernest Hemingway", "F. Scott Fitzgerald"},
+            {"Jupiter", "Saturn", "Mars", "Earth"},
+            {"299792458 m/s", "150000000 m/s", "300000000 m/s", "299792457 m/s"},
+            {"Leonardo da Vinci", "Vincent van Gogh", "Pablo Picasso", "Claude Monet"},
+            {"Au", "Ag", "Pb", "Pt"},
+            {"8", "7", "6", "5"}
+        };
+        char correctAnswers[NUM_QUESTIONS] = {'B', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A'};
+
+        for(int i = 0; i < NUM_QUESTIONS; i++) {
+            questions[i].setQuestion(questionTexts[i], choices[i], correctAnswers[i]);
+        }
+    }
+
+    void simulateStudent(int index) {
+        if(index < MAX_STUDENTS) {
+            Student &student = students[index];
+            string name = "Student" + to_string(index + 1);
+            string id = "ID" + to_string(index + 1);
+            student.setDetails(name, id);
+            student.simulateAnswers(questions);
+        }
+    }
+
+    void simulateStudents(int count) {
+        for(int i = 0; i < count; i++) {
+            if(studentCount < MAX_STUDENTS) {
+                simulateStudent(studentCount);
+                studentCount++;
+            } else {
+                cout << "Maximum number of students reached." << endl;
+                break;
+            }
+        }
+    }
+
+    void gradeStudents() {
+        for(int i = 0; i < studentCount; i++) {
+            students[i].calculateScore(questions);
+        }
+    }
+
+    void printResults() const {
+        for(int i = 0; i < studentCount; i++) {
+            students[i].printDetails();
+            students[i].checkAnswers(questions);
+        }
+    }
+};
+
+int main() {
+    srand(static_cast<unsigned>(time(0))); // Seed for random number generation
+
+    Exam exam;
+
+    // Generate questions and correct answers
+    exam.generateQuestions();
+
+    // Simulate 4 students
+    exam.simulateStudents(SIMULATED_STUDENTS);
+
+    // Grade students
+    exam.gradeStudents();
+
+    // Print results
+    exam.printResults();
+
+    return 0;
+}
